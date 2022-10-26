@@ -1,8 +1,10 @@
 package com.javarush.chebotareva.field;
+
 import com.javarush.chebotareva.Animal;
 import com.javarush.chebotareva.Animals;
 import com.javarush.chebotareva.Inputdata;
 import com.javarush.chebotareva.thread.ThreadCreation;
+
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -11,7 +13,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class GameField {
     private final Cell[][] field = new Cell[Inputdata.xFieldLength][Inputdata.yFieldWidth];
-
     Animals allAnimals = new Animals();
     String log = "";
 
@@ -119,12 +120,13 @@ public class GameField {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         for (int i = 0; i < field.length; i++) {
             for (int j = 0; j < field[i].length; j++) {
-                synchronized (field[i][j]) {
-                    ThreadCreation threadCreation = new ThreadCreation(field[i][j]);
-                    executorService.submit(threadCreation);
-                }
+                //synchronized (field[i][j]) {
+                ThreadCreation threadCreation = new ThreadCreation(field[i][j]);
+                executorService.submit(threadCreation);
+                //}
             }
         }
+        executorService.shutdown();
     }
 
     public void multiply() {
@@ -154,52 +156,56 @@ public class GameField {
 
         for (int i = 0; i < field.length; i++) {
             for (int j = 0; j < field[i].length; j++) {
-                synchronized (field[i][j]) {
-                    for (Map.Entry<String, LinkedList<Animal>> entry : field[i][j].animalSet.entrySet()) {
-                        LinkedList<Animal> value = entry.getValue();
-                        String name = entry.getKey();
-                        if (!value.isEmpty()) {
-                            int animalgoaway = 0;
+                //synchronized (field[i][j]) {
+                for (Map.Entry<String, LinkedList<Animal>> entry : field[i][j].animalSet.entrySet()) {
+                    LinkedList<Animal> value = entry.getValue();
+                    String name = entry.getKey();
+                    if (!value.isEmpty()) {
+                        int animalgoaway = 0;
+                        try {
                             for (Animal animal : value) {
-                                if (!value.isEmpty()) {
-                                    speed = animal.getSpeed(); // макс кол-во шагов
-                                    int r = ThreadLocalRandom.current().nextInt(-1 * speed, speed + 1);
-                                    int IorJ = ThreadLocalRandom.current().nextInt(2);
-                                    if (IorJ > 0) {
-                                        stepsI = r;
+
+                                speed = animal.getSpeed(); // макс кол-во шагов
+                                int r = ThreadLocalRandom.current().nextInt(-1 * speed, speed + 1);
+                                int IorJ = ThreadLocalRandom.current().nextInt(2);
+                                if (IorJ > 0) {
+                                    stepsI = r;
+                                } else {
+                                    stepsJ = r;
+                                }
+                                // удаление из списка мапы и добавление в список мапы с новыми координатами
+                                if ((i + stepsI) < 0 || (i + stepsI) >= field.length || (j + stepsJ) < 0 || (j + stepsJ) >= field[i].length) {
+                                    stepsI = 0;
+                                    stepsJ = 0;
+                                }
+                                if (stepsI != 0 || stepsJ != 0) {
+                                    double newWeight = animal.getWeight() - animal.getWeight() / 3;
+                                    animal.setWeight(newWeight);
+                                    // synchronized (field[i + stepsI][j + stepsJ]) {
+                                    if (animal.getWeight() > animal.getMinWeight()) {
+
+                                        field[i + stepsI][j + stepsJ].animalSet.get(name).add(animal);
+                                        animalgoaway += 1;
                                     } else {
-                                        stepsJ = r;
+                                        animalgoaway += 1;
                                     }
-                                    // удаление из списка мапы и добавление в список мапы с новыми координатами
-                                    if ((i + stepsI) < 0 || (i + stepsI) >= field.length || (j + stepsJ) < 0 || (j + stepsJ) >= field[i].length) {
-                                        stepsI = 0;
-                                        stepsJ = 0;
-                                    }
-                                    if (stepsI != 0 || stepsJ != 0) {
-                                        double newWeight = animal.getWeight() - animal.getWeight() / 3;
-                                        animal.setWeight(newWeight);
-                                        synchronized (field[i + stepsI][j + stepsJ]) {
-                                            if (animal.getWeight() > animal.getMinWeight()) {
-
-                                                field[i + stepsI][j + stepsJ].animalSet.get(name).add(animal);
-                                                animalgoaway += 1;
-                                            } else {
-                                                animalgoaway += 1;
-                                            }
-                                        }
-                                        log = log + "\n" + name + " moves from map" + (i) + ":" + (j) + " to map" + (i + stepsI) + ":" + (j + stepsJ);
-                                    }
+                                    //}
+                                    log = log + "\n" + name + " moves from map" + (i) + ":" + (j) + " to map" + (i + stepsI) + ":" + (j + stepsJ);
                                 }
+
                             } // заканчиваем цикл перебора животных
+                        } catch (Exception ex) {
+                            System.out.println(ex);
+                        }
+                        for (int k = 0; k < animalgoaway; k++) {
+                            if (!value.isEmpty()) {
+                                value.remove(0);
 
-                            for (int k = 0; k < animalgoaway; k++) {
-                                if (!value.isEmpty()) {
-                                    value.remove(0);
-                                }
                             }
                         }
                     }
                 }
+                //}
             }
         }
     }

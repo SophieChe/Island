@@ -1,8 +1,6 @@
 package com.javarush.chebotareva.field;
-
 import com.javarush.chebotareva.Animal;
 import com.javarush.chebotareva.Animals;
-
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,7 +27,6 @@ public class Cell {
 
         for (int i = 0; i < animals.getAnimal().length; i++) {
             createOrNot = ThreadLocalRandom.current().nextInt(0, 2);
-            //LinkedList<Animal> setAnimal;
             if (createOrNot > 0) {
                 String name = allanimals[i];
                 Animal animal = animals.makeAnimalMainSet().get(name);

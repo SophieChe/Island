@@ -1,4 +1,5 @@
 package com.javarush.chebotareva.field;
+
 public class GameStart {
 
     public static void main(String[] args) {
@@ -11,6 +12,7 @@ public class GameStart {
         System.out.println("________________________");
 
         for (int i = 0; i < 10; i++) {
+            System.out.println("заходит");
             gameField.move();
             gameField.multiply();
             gameField.eat();
