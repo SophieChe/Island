@@ -1,0 +1,26 @@
+package com.javarush.chebotareva.thread;
+
+import com.javarush.chebotareva.field.Cell;
+import com.javarush.chebotareva.field.GameField;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ThreadCreation implements Runnable {
+
+    private final Cell cell;
+    public ThreadCreation(Cell cell) {
+        this.cell = cell;
+    }
+
+    @Override
+    public void run() {
+        try {
+            cell.eatInCell();
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            System.out.println("ошибка в run " + ex);
+        }
+    }
+}
+
+
